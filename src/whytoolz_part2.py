@@ -21,6 +21,10 @@ See: https://toolz.readthedocs.io/en/latest/api.html#itertoolz
 """
 
 
+from collections import deque
+from unittest import result
+
+
 def islice(seq, *args):
     """
     Slice a sequence and return a list of elements.
@@ -52,7 +56,22 @@ def islice(seq, *args):
     Hint: Parse the *args to determine start, stop, and step values,
           then iterate through the sequence collecting appropriate elements into a list.
     """
-    pass
+    if len(args) == 1:
+        start , stop, step = 0, args[0], 1
+    elif len(args) == 2:
+        start, stop, step = args[0], args[1], 1
+    elif len(args) == 3:
+        start, stop, step = args[0], args[1], args[2]
+    else:
+        raise ValueError("islice() takes 2 to 4 arguments (seq, start, stop[, step])")
+
+    result = []
+    for index, item in enumerate(seq):
+        if index >= start and index < stop and (index - start) % step == 0:
+            result.append(item)
+        if index >= stop:
+            break
+    return result
 
 
 def drop(n, seq):
@@ -76,7 +95,10 @@ def drop(n, seq):
 
     Hint: Use islice with a start parameter
     """
-    pass
+    from itertools import islice
+
+    return list(islice(seq, n, None))
+
 
 
 def tail(n, seq):
@@ -102,8 +124,11 @@ def tail(n, seq):
 
     Hint: Use collections.deque with maxlen, or convert to list and slice
     """
-    pass
+    from collections import deque
 
+    if n <= 0:
+        return []
+    return list(deque(seq, maxlen=n))
 
 def concat(seqs):
     """
@@ -126,7 +151,11 @@ def concat(seqs):
 
     Hint: Nested loops to collect elements, or flatten the sequences
     """
-    pass
+    result = []
+    for seq in seqs:
+        for item in seq:
+            result.append(item)
+    return result
 
 
 def unique(seq):
@@ -149,7 +178,16 @@ def unique(seq):
 
     Hint: Keep a set of seen elements, only collect if not seen before
     """
-    pass
+
+    seen = set()
+    result = []
+
+    for item in seq:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
+    return result
+
 
 
 def partition(n, seq):
@@ -175,7 +213,10 @@ def partition(n, seq):
 
     Hint: Use islice in a loop to grab n items at a time
     """
-    pass
+    if n <= 0:
+        raise ValueError("Partition size must be greater than 0")
+
+    return [tuple(seq[i:i + n]) for i in range(0, len(seq), n)]
 
 
 def interleave(seqs):
@@ -199,7 +240,14 @@ def interleave(seqs):
 
     Hint: Use zip_longest to handle sequences of different lengths
     """
-    pass
+    from itertools import zip_longest
+
+    result = []
+    for group in zip_longest(*seqs, fillvalue=None):
+        for item in group:
+            if item is not None:
+                result.append(item)
+    return result
 
 
 def pluck(key, seq):
@@ -225,7 +273,8 @@ def pluck(key, seq):
 
     Hint: Use a list comprehension to extract values
     """
-    pass
+    return [d[key] for d in seq]
+
 
 
 def accumulate(func, seq, initial=None):
@@ -251,7 +300,23 @@ def accumulate(func, seq, initial=None):
 
     Hint: Keep a running accumulator, collect results at each step
     """
-    pass
+    result = []
+    it = iter(seq)
+    if initial is not None:
+        acc = initial
+        result.append(acc)
+    else:
+        try:
+            acc = next(it)
+            result.append(acc)
+        except StopIteration:
+            return result  # Empty sequence and no initial value
+
+    for item in it:
+        acc = func(acc, item)
+        result.append(acc)
+
+    return result
 
 
 def sliding_window(n, seq):
@@ -276,7 +341,14 @@ def sliding_window(n, seq):
 
     Hint: Use collections.deque with maxlen to maintain the window
     """
-    pass
+
+    window = deque(maxlen=n)
+    result = []
+    for item in seq:
+        window.append(item)
+        if len(window) == n:
+            result.append(tuple(window))
+    return result
 
 
 def take_nth(n, seq):
@@ -300,4 +372,4 @@ def take_nth(n, seq):
 
     Hint: Use enumerate to track position, collect when position % n == 0
     """
-    pass
+    return [item for i, item in enumerate(seq) if i % n == 0]

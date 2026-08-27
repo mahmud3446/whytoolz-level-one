@@ -36,7 +36,13 @@ def take(n, seq):
 
     Hint: Use 'yield' and enumerate or a counter to track how many items yielded
     """
-    pass
+    if n <= 0:
+        return
+
+    for index, item in enumerate(seq):
+        yield item
+        if index + 1 >= n:
+            break
 
 
 def iterate(func, x):
@@ -63,7 +69,9 @@ def iterate(func, x):
 
     Hint: Use 'yield' to create a generator. Loop forever!
     """
-    pass
+    while True:
+        yield x
+        x = func(x)
 
 
 def topk(k, seq):
@@ -88,7 +96,8 @@ def topk(k, seq):
 
     Hint: Use heapq.nlargest
     """
-    pass
+    import heapq
+    return heapq.nlargest(k, seq)
 
 
 def reduceby(key, binop, seq, init):
@@ -114,7 +123,13 @@ def reduceby(key, binop, seq, init):
 
     Hint: Build a dict while iterating, reducing as you go
     """
-    pass
+    result = {}
+    for item in seq:
+        k = key(item)
+        if k not in result:
+            result[k] = init
+        result[k] = binop(result[k], item)
+    return result
 
 
 def juxt(*funcs):
@@ -137,7 +152,9 @@ def juxt(*funcs):
 
     Hint: Return a function that calls each func and returns tuple of results
     """
-    pass
+    def inner(x):
+        return tuple(func(x) for func in funcs)
+    return inner
 
 
 def curry(func):
@@ -167,4 +184,12 @@ def curry(func):
     Warning: This is VERY HARD! Requires inspect module and closures.
     Hint: Use functools.partial or inspect.signature
     """
-    pass
+    from functools import partial
+    from inspect import signature
+
+    def curried(*args):
+        if len(args) >= len(signature(func).parameters):
+            return func(*args)
+        return partial(curried, *args)
+
+    return curried
